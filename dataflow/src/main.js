@@ -27,7 +27,7 @@ let graph = new LGraph();
 	let statusText = document.querySelector("#status");
 
 	let fileHandle = null;
-	async function getFileHandle(force = false) {
+	async function getFileHandle(saveMode, force = false) {
 		if (typeof window.showSaveFilePicker === "undefined") {
 			statusText.innerHTML = "Using this editor in Edge/Opera/Chrome will allow more comfortable saving.";
 			return false;
@@ -45,8 +45,14 @@ let graph = new LGraph();
 					},
 				},
 			],
+			multiple: false
 		};
-		fileHandle = await window.showSaveFilePicker(options);
+
+		if (saveMode)
+			fileHandle = await window.showSaveFilePicker(options);
+		else
+			[fileHandle] = await window.showOpenFilePicker(options);
+
 		return true;
 	}
 
@@ -56,7 +62,7 @@ let graph = new LGraph();
 	});
 
 	async function save(saveAs = false) {
-		let fh = await getFileHandle(saveAs);
+		let fh = await getFileHandle(true, saveAs);
 		if (fh) {
 			const writable = await fileHandle.createWritable();
 			await writable.write(JSON.stringify(graph.serialize()));
@@ -89,10 +95,10 @@ let graph = new LGraph();
 	let loadInput = document.querySelector("#loadInput");
 
 	document.querySelector("#load").addEventListener("click", async function () {
-		let fh = await getFileHandle(true);
+		let fh = await getFileHandle(false, true);
 		if (fh) {
 			const file = await fileHandle.getFile();
-			const data = file.text();
+			const data = await file.text();
 			graph.configure(JSON.parse(data));
 			return;
 		}
@@ -111,4 +117,15 @@ let graph = new LGraph();
 			graph.configure(JSON.parse(content));
 		};
 	};
+
+	document.addEventListener("keydown", function (e) {
+		if (e.ctrlKey && e.key == "s") {
+			e.preventDefault();
+			document.querySelector("#save").click();
+		}
+		else if (e.ctrlKey && e.key == "o") {
+			e.preventDefault();
+			document.querySelector("#load").click();
+		}
+	}, false);
 }
