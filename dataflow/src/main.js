@@ -24,7 +24,47 @@ let graph = new LGraph();
 }
 
 {
-	document.querySelector("#save").addEventListener("click", function () {
+	let statusText = document.querySelector("#status");
+
+	let fileHandle = null;
+	async function getFileHandle(force = false) {
+		if (typeof window.showSaveFilePicker === "undefined") {
+			statusText.innerHTML = "Using this editor in Edge/Opera/Chrome will allow more comfortable saving.";
+			return false;
+		}
+
+		if (fileHandle !== null && !force)
+			return true;
+
+		const options = {
+			types: [
+				{
+					description: 'Json files',
+					accept: {
+						'text/plain': ['.json'],
+					},
+				},
+			],
+		};
+		fileHandle = await window.showSaveFilePicker(options);
+		return true;
+	}
+
+	document.querySelector("#new").addEventListener("click", function () {
+		fileHandle = null;
+		graph.configure({});
+	});
+
+	async function save(saveAs = false) {
+		let fh = await getFileHandle(saveAs);
+		if (fh) {
+			const writable = await fileHandle.createWritable();
+			await writable.write(JSON.stringify(graph.serialize()));
+			await writable.close();
+			statusText.innerHTML = "Saved";
+			return;
+		}
+
 		var data = JSON.stringify(graph.serialize());
 		var file = new Blob([data]);
 		var url = URL.createObjectURL(file);
@@ -36,21 +76,37 @@ let graph = new LGraph();
 		element.click();
 		document.body.removeChild(element);
 		setTimeout(function () { URL.revokeObjectURL(url); }, 1000 * 60); //wait one minute to revoke url	
+	}
+
+	document.querySelector("#save").addEventListener("click", function () {
+		save(false);
+	});
+
+	document.querySelector("#saveAs").addEventListener("click", function () {
+		save(true);
 	});
 
 	let loadInput = document.querySelector("#loadInput");
 
-	document.querySelector("#load").addEventListener("click", function () {
+	document.querySelector("#load").addEventListener("click", async function () {
+		let fh = await getFileHandle(true);
+		if (fh) {
+			const file = await fileHandle.getFile();
+			const data = file.text();
+			graph.configure(JSON.parse(data));
+			return;
+		}
+
 		loadInput.value = null;
 		loadInput.click();
 	});
 
-	loadInput.onchange = function() {
+	loadInput.onchange = function () {
 		let file = loadInput.files[0];
 
 		let reader = new FileReader();
 		reader.readAsText(file);
-		reader.onload = function() {
+		reader.onload = function () {
 			let content = reader.result;
 			graph.configure(JSON.parse(content));
 		};
