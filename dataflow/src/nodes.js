@@ -25,23 +25,33 @@ function registerConstantNode(type, defaultValue, widgetType) {
 	node.title = "Constant (" + type + ")";
 	LiteGraph.registerNodeType(type + "/constant", node);
 }
-function registerBinaryNode(name, type, aDef, bDef, widgetType) {
+function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 	function node() {
 		this.addOutput("v", type);
 		this.addInput("a", type);
 		this.addInput("b", type);
 
-		this.addProperty("a", aDef);
-		this.addProperty("b", bDef);
+		if(widgetType) {
+			this.addProperty("a", aDef);
+			this.addProperty("b", bDef);
 
-		this.addWidget(widgetType, "a", aDef, "a");
-		this.addWidget(widgetType, "b", bDef, "b");
+			this.addWidget(widgetType, "a", aDef, "a");
+			this.addWidget(widgetType, "b", bDef, "b");
+		}
+	}
+	node.title = name[0].toUpperCase() + name.slice(1) + " (" + type + ")";
+	LiteGraph.registerNodeType(type + "/" + name, node);
+}
+function registerUnaryNode(name, type) {
+	function node() {
+		this.addOutput("v", type);
+		this.addInput("a", type);
 	}
 	node.title = name[0].toUpperCase() + name.slice(1) + " (" + type + ")";
 	LiteGraph.registerNodeType(type + "/" + name, node);
 }
 
-// Numbers
+// number
 {
 	registerInputNode("number", "time");
 	// registerOutputNode("number", "");
@@ -51,6 +61,8 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType) {
 	registerBinaryNode("sub", "number", 0, 0, "number");
 	registerBinaryNode("mult", "number", 0, 1, "number");
 	registerBinaryNode("div", "number", 0, 1, "number");
+
+	registerUnaryNode("abs", "number");
 
 	{
 		function node() {
@@ -91,7 +103,32 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType) {
 	}
 }
 
-// Poses
+// vec3
+{
+	{
+		function node() {
+			this.addInput("x", "number");
+			this.addInput("y", "number");
+			this.addInput("z", "number");
+			this.addOutput("v", "vec3");
+
+			this.addProperty("x", 0);
+			this.addProperty("y", 0);
+			this.addProperty("z", 0);
+
+			this.addWidget("number", "x", 0, "x");
+			this.addWidget("number", "y", 0, "y");
+			this.addWidget("number", "z", 0, "z");
+		}
+		node.title = "Compose (vec3)";
+		LiteGraph.registerNodeType("vec3/compose", node);
+	}
+
+	registerBinaryNode("add", "vec3", 0, 0);
+	registerBinaryNode("sub", "vec3", 0, 0);
+}
+
+// pose
 {
 	registerInputNode("pose", "default");
 	registerOutputNode("pose", "pose");
@@ -110,6 +147,21 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType) {
 		node.title = "Mix (pose)";
 		node.desc = "Linearly mixes two poses";
 		LiteGraph.registerNodeType("pose/mix", node);
+	}
+
+	{
+		function node() {
+			this.addOutput("v", "pose");
+			this.addInput("pose", "pose");
+			this.addInput("offset", "vec3");
+
+			this.addProperty("bone", "bone:");
+
+			this.addWidget("text", "bone", "bone:", "bone");
+		}
+		node.title = "Offet bone (pose)";
+		node.desc = "Adds offset to a given bone";
+		LiteGraph.registerNodeType("pose/offsetBone", node);
 	}
 
 }
