@@ -184,6 +184,9 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 	registerBinaryNode("sub", "qn");
 	registerBinaryNode("mult", "qn");
 
+	registerUnaryNode("normalize", "qn");
+	registerUnaryNode("invert", "qn");
+
 	{
 		function node() {
 			this.addOutput("v", "qn");
@@ -198,8 +201,39 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 		LiteGraph.registerNodeType("qn/multn", node);
 	}
 
-	registerUnaryNode("normalize", "qn");
-	registerUnaryNode("invert", "qn");
+	{
+		function node() {
+			this.addOutput("v", "qn");
+			this.addInput("a", "qn");
+			this.addInput("b", "qn");
+			this.addInput("t", "num");
+
+			this.addProperty("t", 0);
+
+			this.addWidget("number", "t", 0, "t");
+		}
+		node.title = "Mix (qn)";
+		LiteGraph.registerNodeType("qn/mix", node);
+	}
+
+
+	{
+		function node() {
+			this.addOutput("childRot", "qn");
+			this.addOutput("parentRot", "qn");
+
+			this.addInput("inRot", "qn");
+
+			this.addProperty("pitchLimit", 180);
+			this.addProperty("yawLimit", 180);
+
+			this.addWidget("number", "pitchLimit", 180, "pitchLimit");
+			this.addWidget("number", "yawLimit", 180, "yawLimit");
+		}
+		node.title = "Parented constrained rotation";
+		node.description = "outRotation = rot - parentRotation; parent rotation changes if the outRotation would be out of bounds";
+		LiteGraph.registerNodeType("qn/parentedConstrainedRotation", node);
+	}
 }
 
 // pose
