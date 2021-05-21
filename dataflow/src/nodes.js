@@ -101,6 +101,21 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 		node.title = "Smoothstep";
 		LiteGraph.registerNodeType("num/smoothstep", node);
 	}
+
+	{
+		function node() {
+			this.addOutput("v", "num");
+			this.addInput("target", "num");
+			this.addInput("speed", "num");
+			this.addInput("time", "num");
+
+			this.addProperty("speed", 1);
+
+			this.addWidget("number", "speed", 1, "speed");
+		}
+		node.title = "Smoothen (num)";
+		LiteGraph.registerNodeType("num/smoothen", node);
+	}
 }
 
 // vec
