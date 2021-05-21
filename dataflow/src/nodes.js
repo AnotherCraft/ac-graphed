@@ -87,6 +87,25 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 		function node() {
 			this.addOutput("v", "num");
 			this.addInput("a", "num");
+			this.addInput("min", "num");
+			this.addInput("max", "num");
+
+			this.addProperty("a", 0);
+			this.addProperty("min", 0);
+			this.addProperty("max", 1);
+
+			this.addWidget("number", "a", 0, "a");
+			this.addWidget("number", "min", 0, "min");
+			this.addWidget("number", "max", 1, "max");
+		}
+		node.title = "Clamp (num)";
+		LiteGraph.registerNodeType("num/clamp", node);
+	}
+
+	{
+		function node() {
+			this.addOutput("v", "num");
+			this.addInput("a", "num");
 		}
 		node.title = "Zig-zag";
 		node.desc = "Similar to modulo 1, but goes to v=1 at a=0.5 and back to v=0 at a=1 (and repeating)";
@@ -253,7 +272,7 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 
 // pose
 {
-	registerInputNode("pose", "default");
+	registerInputNode("pose", "pose:default");
 	registerOutputNode("pose", "pose");
 
 	{
