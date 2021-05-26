@@ -439,9 +439,9 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 			this.addWidget("toggle", "inheritInputs", true, "inheritInputs");
 		}
 
-		node.prototype.onPropertyChanged = function () {
+		node.prototype.onPropertyChanged = function (name) {
 			// Inputs
-			{
+			if(name == "inputs") {
 				let lst = this.properties["inputs"].split(",").map(x => x.trim()).filter(x => x.length > 0);
 				for (i of lst) {
 					if (this.findInputSlot(i) == -1)
@@ -456,7 +456,7 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 			}
 
 			// Outputs
-			{
+			else if(name == "outputs") {
 				let lst = this.properties["outputs"].split(",").map(x => x.trim()).filter(x => x.length > 0);
 				for (i of lst) {
 					if (this.findOutputSlot(i) == -1)
@@ -471,8 +471,8 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 			}
 		}
 
-		node.title = "Input (graph)";
+		node.title = "Property graph";
 
-		LiteGraph.registerNodeType("graph/input", node);
+		LiteGraph.registerNodeType("graph/propertyGraph", node);
 	}
 }
