@@ -90,16 +90,39 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 			this.addInput("min", "num");
 			this.addInput("max", "num");
 
-			this.addProperty("a", 0);
 			this.addProperty("min", 0);
 			this.addProperty("max", 1);
 
-			this.addWidget("number", "a", 0, "a");
 			this.addWidget("number", "min", 0, "min");
 			this.addWidget("number", "max", 1, "max");
 		}
 		node.title = "Clamp (num)";
 		LiteGraph.registerNodeType("num/clamp", node);
+	}
+
+	{
+		function node() {
+			this.addOutput("v", "num");
+			this.addInput("a", "num");
+			this.addInput("srcMin", "num");
+			this.addInput("srcMax", "num");
+			this.addInput("tgtMin", "num");
+			this.addInput("tgtMax", "num");
+
+			this.addProperty("srcMin", 0);
+			this.addProperty("srcMax", 1);
+			this.addProperty("tgtMin", 0);
+			this.addProperty("tgtMax", 1);
+			this.addProperty("clamp", true);
+
+			this.addWidget("number", "srcMin", 0, "srcMin");
+			this.addWidget("number", "srcMax", 1, "srcMax");
+			this.addWidget("number", "tgtMin", 0, "tgtMin");
+			this.addWidget("number", "tgtMax", 1, "tgtMax");
+			this.addWidget("toggle", "clamp", true, "clamp");
+		}
+		node.title = "Map (num)";
+		LiteGraph.registerNodeType("num/map", node);
 	}
 
 	{
@@ -119,21 +142,6 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 		}
 		node.title = "Smoothstep";
 		LiteGraph.registerNodeType("num/smoothstep", node);
-	}
-
-	{
-		function node() {
-			this.addOutput("v", "num");
-			this.addInput("target", "num");
-			this.addInput("speed", "num");
-			this.addInput("time", "num");
-
-			this.addProperty("speed", 1);
-
-			this.addWidget("number", "speed", 1, "speed");
-		}
-		node.title = "Smoothen (num)";
-		LiteGraph.registerNodeType("num/smoothen", node);
 	}
 }
 
@@ -159,6 +167,21 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 		}
 		node.title = "Compose (vec)";
 		LiteGraph.registerNodeType("vec/compose", node);
+	}
+
+	{
+		function node() {
+			this.addOutput("v", "vec");
+			this.addInput("a", "vec");
+			this.addInput("b", "vec");
+			this.addInput("t", "num");
+
+			this.addProperty("t", 0);
+
+			this.addWidget("number", "t", 0, "t");
+		}
+		node.title = "Mix (vec)";
+		LiteGraph.registerNodeType("vec/mix", node);
 	}
 
 	registerBinaryNode("add", "vec", 0, 0);
@@ -257,6 +280,8 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 			this.addOutput("parentRot", "qn");
 
 			this.addInput("inRot", "qn");
+			this.addInput("pitchLimit", "num");
+			this.addInput("yawLimit", "num");
 
 			this.addProperty("pitchLimit", 180);
 			this.addProperty("yawLimit", 180);
@@ -307,4 +332,147 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 		LiteGraph.registerNodeType("pose/adjustBone", node);
 	}
 
+	{
+		function node() {
+			this.addOutput("v", "pose");
+			this.addInput("pose", "pose");
+
+			const def = "armLeft=armRight";
+			this.addProperty("swap", def);
+			this.addProperty("mirrorH", true);
+
+			this.addWidget("text", "swap", def, "swap");
+			this.addWidget("toggle", "mirrorH", true, "mirrorH");
+		}
+		node.title = "Swap bone transforms (pose)";
+		node.desc = "Swap is in format 'b1=b2,b3=b4'. The 'bone:' prefix is automatically added.";
+		LiteGraph.registerNodeType("pose/swapBoneTransforms", node);
+	}
+
+}
+
+// Animation
+{
+	{
+		function node() {
+			this.addOutput("v", "num");
+			this.addInput("target", "num");
+			this.addInput("speed", "num");
+			this.addInput("time", "num");
+
+			this.addProperty("speed", 1);
+
+			this.addWidget("number", "speed", 1, "speed");
+		}
+		node.title = "Smoothen";
+		LiteGraph.registerNodeType("anim/smoothen", node);
+	}
+
+	{
+		function node() {
+			this.addOutput("v", "num");
+			this.addInput("target", "num");
+			this.addInput("time", "num");
+
+			this.addProperty("strength", 1);
+			this.addProperty("damping", 0);
+
+			this.addWidget("number", "strength", 1, "strength");
+			this.addWidget("number", "damping", 0, "damping");
+		}
+		node.title = "Spring";
+		LiteGraph.registerNodeType("anim/spring", node);
+	}
+
+	{
+		function node() {
+			this.addOutput("progress", "num");
+			this.addOutput("isRunning", "num");
+
+			this.addInput("startTime", "num");
+			this.addInput("duration", "num");
+			this.addInput("time", "num");
+
+			this.addProperty("duration", 1);
+
+			this.addWidget("number", "duration", 1, "duration");
+		}
+		node.title = "Single shot animation";
+		LiteGraph.registerNodeType("anim/singleShot", node);
+	}
+}
+
+// Graph
+{
+	{
+		function node() {
+			this.addInput("v", "");
+			this.addProperty("name", "");
+			this.addWidget("text", "name", "", "name");
+		}
+		node.title = "Relay input";
+		LiteGraph.registerNodeType("graph/relayInput", node);
+	}
+
+	{
+		function node() {
+			this.addOutput("v", "");
+			this.addProperty("name", "");
+			this.addWidget("text", "name", "", "name");
+		}
+		node.title = "Relay output";
+		LiteGraph.registerNodeType("graph/relayOutput", node);
+	}
+
+
+	{
+		function node() {
+
+			this.addProperty("name", "graph:");
+			this.addProperty("inputs", "");
+			this.addProperty("outputs", "");
+			this.addProperty("inheritInputs", true);
+
+			this.addWidget("text", "name", "graph:", "name");
+			this.addWidget("text", "inputs", "", "inputs");
+			this.addWidget("text", "outputs", "", "outputs");
+			this.addWidget("toggle", "inheritInputs", true, "inheritInputs");
+		}
+
+		node.prototype.onPropertyChanged = function () {
+			// Inputs
+			{
+				let lst = this.properties["inputs"].split(",").map(x => x.trim()).filter(x => x.length > 0);
+				for (i of lst) {
+					if (this.findInputSlot(i) == -1)
+						this.addInput(i, "");
+				}
+				for (let i = 0; i < this.inputs.length; i++) {
+					if (!lst.includes(this.inputs[i].name)) {
+						this.removeInput(i);
+						i--;
+					}
+				}
+			}
+
+			// Outputs
+			{
+				let lst = this.properties["outputs"].split(",").map(x => x.trim()).filter(x => x.length > 0);
+				for (i of lst) {
+					if (this.findOutputSlot(i) == -1)
+						this.addOutput(i, "");
+				}
+				for (let i = 0; i < this.outputs.length; i++) {
+					if (!lst.includes(this.outputs[i].name)) {
+						this.removeOutput(i);
+						i--;
+					}
+				}
+			}
+		}
+
+		node.title = "Input (graph)";
+
+		LiteGraph.registerNodeType("graph/input", node);
+	}
 }
