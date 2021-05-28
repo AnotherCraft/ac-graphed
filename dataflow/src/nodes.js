@@ -168,6 +168,16 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 		node.title = "Compose (vec)";
 		LiteGraph.registerNodeType("vec/compose", node);
 	}
+	{
+		function node() {
+			this.addInput("v", "vec");
+			this.addOutput("x", "num");
+			this.addOutput("y", "num");
+			this.addOutput("z", "num");
+		}
+		node.title = "Decompose (vec)";
+		LiteGraph.registerNodeType("vec/decompose", node);
+	}
 
 	{
 		function node() {
@@ -308,11 +318,13 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 			this.addInput("t", "num");
 
 			this.addProperty("t", 0);
+			this.addProperty("boneFilter", "");
 
 			this.addWidget("number", "t", 0, "t");
+			this.addWidget("text", "boneFilter", "", "boneFilter");
 		}
 		node.title = "Mix (pose)";
-		node.desc = "Linearly mixes two poses";
+		node.desc = "Linearly mixes two poses. Bone filter: only use selected bones from 'b'. Bones should be separated by ',', the 'bone:' prefix is added automatically.";
 		LiteGraph.registerNodeType("pose/mix", node);
 	}
 
@@ -364,9 +376,25 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 
 			this.addWidget("number", "speed", 1, "speed");
 		}
-		node.title = "Smoothen";
+		node.title = "Smoothen (num)";
 		LiteGraph.registerNodeType("anim/smoothen", node);
 	}
+
+	{
+		function node() {
+			this.addOutput("v", "vec");
+			this.addInput("target", "vec");
+			this.addInput("speed", "num");
+			this.addInput("time", "num");
+
+			this.addProperty("speed", 1);
+
+			this.addWidget("number", "speed", 1, "speed");
+		}
+		node.title = "Smoothen (vec)";
+		LiteGraph.registerNodeType("anim/smoothenVec", node);
+	}
+
 
 	{
 		function node() {
@@ -400,6 +428,43 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 		node.title = "Single shot animation";
 		LiteGraph.registerNodeType("anim/singleShot", node);
 	}
+
+	{
+		function node() {
+			this.addInput("progress", "num")
+			this.addInput("pose0", "pose");
+			this.addInput("pose1", "pose");
+			this.addOutput("pose", "pose");
+
+			this.addProperty("keys", "0,1");
+			this.addProperty("ipol", "smoothstep");
+
+			this.addWidget("text", "keys", "0,1", "keys");
+			this.addWidget("combo", "ipol", "smoothstep", "ipol", {values: ["linear", "smoothstep"]});
+		}
+
+		node.prototype.onPropertyChanged = function (name) {
+			if(name == "keys") {
+				let lst = this.properties["keys"].split(",").map(x => x.trim()).filter(x => x.length > 0).map((e, i) => "pose" + i);
+				console.log(lst);
+				for (i of lst) {
+					if (this.findInputSlot(i) == -1)
+						this.addInput(i, "");
+				}
+				for (let i = 0; i < this.inputs.length; i++) {
+					let n = this.inputs[i].name;
+					if (n != "progress" && !lst.includes(n)) {
+						this.removeInput(i);
+						i--;
+					}
+				}
+			}
+		}
+
+		node.title = "Pose sequence";
+
+		LiteGraph.registerNodeType("anim/poseSequence", node);
+	}
 }
 
 // Graph
@@ -424,6 +489,16 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 		LiteGraph.registerNodeType("graph/relayOutput", node);
 	}
 
+	{
+		function node() {
+			this.addInput("a", "");
+			this.addInput("b", "");
+			this.addInput("sel", "num");
+			this.addOutput("v", "");
+		}
+		node.title = "Select";
+		LiteGraph.registerNodeType("util/select", node);
+	}
 
 	{
 		function node() {
