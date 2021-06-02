@@ -85,6 +85,25 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 
 	{
 		function node() {
+			this.addOutput("eq", "num");
+			this.addOutput("neq", "num");
+			this.addOutput("lt", "num");
+			this.addOutput("gt", "num");
+			this.addInput("a", "num");
+			this.addInput("b", "num");
+
+			this.addProperty("a", 0);
+			this.addProperty("b", 0);
+
+			this.addWidget("number", "a", 0, "a");
+			this.addWidget("number", "b", 0, "b");
+		}
+		node.title = "Compare (num)";
+		LiteGraph.registerNodeType("num/compare", node);
+	}
+
+	{
+		function node() {
 			this.addOutput("v", "num");
 			this.addInput("a", "num");
 			this.addInput("min", "num");
@@ -498,6 +517,16 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 		}
 		node.title = "Select";
 		LiteGraph.registerNodeType("util/select", node);
+	}
+
+	{
+		function node() {
+			this.addInput("a", "");
+			this.addInput("store", "num");
+			this.addOutput("v", "");
+		}
+		node.title = "D Latch";
+		LiteGraph.registerNodeType("util/dLatch", node);
 	}
 
 	{
