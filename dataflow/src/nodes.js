@@ -338,9 +338,12 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 
 			this.addProperty("t", 0);
 			this.addProperty("boneFilter", "");
+			this.addProperty("ipol", "linear");
 
 			this.addWidget("number", "t", 0, "t");
 			this.addWidget("text", "boneFilter", "", "boneFilter");
+
+			this.addWidget("combo", "ipol", "linear", "ipol", { values: ["linear", "smoothstep"] });
 		}
 		node.title = "Mix (pose)";
 		node.desc = "Linearly mixes two poses. Bone filter: only use selected bones from 'b'. Bones should be separated by ',', the 'bone:' prefix is added automatically.";
@@ -368,12 +371,15 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 			this.addOutput("v", "pose");
 			this.addInput("pose", "pose");
 
+			this.addInput("enable", "num");
+
 			const def = "armLeft=armRight";
 			this.addProperty("swap", def);
 			this.addProperty("mirrorH", true);
 
 			this.addWidget("text", "swap", def, "swap");
 			this.addWidget("toggle", "mirrorH", true, "mirrorH");
+			this.addWidget("toggle", "enable", true, "enable");
 		}
 		node.title = "Swap bone transforms (pose)";
 		node.desc = "Swap is in format 'b1=b2,b3=b4'. The 'bone:' prefix is automatically added.";
