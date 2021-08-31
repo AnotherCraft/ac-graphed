@@ -441,11 +441,70 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 			this.addInput("time", "num");
 
 			this.addProperty("duration", 1);
+			this.addProperty("repeat", false);
 
 			this.addWidget("number", "duration", 1, "duration");
+			this.addWidget("toggle", "repeat", false, "repeat");
 		}
-		node.title = "Single shot animation";
-		LiteGraph.registerNodeType("anim/singleShot", node);
+		node.title = "Animation";
+		LiteGraph.registerNodeType("anim/single", node);
+	}
+
+	{
+		function node() {
+			this.addInput("startTime", "num")
+			this.addInput("time", "num")
+
+			this.addOutput("isRunning", "num");
+
+			this.addProperty("count", 2);
+
+			this.addWidget("number", "count", 2, "count", { min: 1, max: 20, step: 10 });
+
+			this.updateIO();
+		}
+
+		node.prototype.updateIO = function() {
+			let inputList = ["startTime", "time"];
+			let outputList = ["isRunning"];
+			for (let i = 0; i < this.properties["count"]; i++) {
+				inputList.push("duration" + i);
+				outputList.push("progress" + i);
+			}
+
+			for (i of inputList) {
+				if (this.findInputSlot(i) == -1)
+					this.addInput(i, "");
+			}
+			for (let i = 0; i < this.inputs.length; i++) {
+				let n = this.inputs[i].name;
+				if (!inputList.includes(n)) {
+					this.removeInput(i);
+					i--;
+				}
+			}
+
+			for (i of outputList) {
+				if (this.findOutputSlot(i) == -1)
+					this.addOutput(i, "");
+			}
+			for (let i = 0; i < this.outputs.length; i++) {
+				let n = this.outputs[i].name;
+				if (!outputList.includes(n)) {
+					this.removeOutput(i);
+					i--;
+				}
+			}
+		}
+
+		node.prototype.onPropertyChanged = function (name) {
+			if (name == "count")
+				this.updateIO();
+		}
+
+		node.title = "Animation sequence";
+
+		LiteGraph.registerNodeType("anim/sequence", node);
 	}
 
 	{
@@ -459,13 +518,12 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 			this.addProperty("ipol", "smoothstep");
 
 			this.addWidget("text", "keys", "0,1", "keys");
-			this.addWidget("combo", "ipol", "smoothstep", "ipol", {values: ["linear", "smoothstep"]});
+			this.addWidget("combo", "ipol", "smoothstep", "ipol", { values: ["linear", "smoothstep"] });
 		}
 
 		node.prototype.onPropertyChanged = function (name) {
-			if(name == "keys") {
+			if (name == "keys") {
 				let lst = this.properties["keys"].split(",").map(x => x.trim()).filter(x => x.length > 0).map((e, i) => "pose" + i);
-				console.log(lst);
 				for (i of lst) {
 					if (this.findInputSlot(i) == -1)
 						this.addInput(i, "");
@@ -545,7 +603,7 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 
 		node.prototype.onPropertyChanged = function (name) {
 			// Inputs
-			if(name == "inputs") {
+			if (name == "inputs") {
 				let lst = this.properties["inputs"].split(",").map(x => x.trim()).filter(x => x.length > 0);
 				for (i of lst) {
 					if (this.findInputSlot(i) == -1)
@@ -560,7 +618,7 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 			}
 
 			// Outputs
-			else if(name == "outputs") {
+			else if (name == "outputs") {
 				let lst = this.properties["outputs"].split(",").map(x => x.trim()).filter(x => x.length > 0);
 				for (i of lst) {
 					if (this.findOutputSlot(i) == -1)
