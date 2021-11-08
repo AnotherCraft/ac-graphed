@@ -595,6 +595,18 @@ function registerBinaryNode(name, type, aDef, bDef, widgetType = null) {
 
 	{
 		function node() {
+			this.addInput("i", "");
+			this.addOutput("o", "");
+			this.addProperty("name", "anim.");
+
+			this.addWidget("text", "name", "anim.", "name");
+		}
+		node.title = "Plot (Tracy)";
+		LiteGraph.registerNodeType("util/plot", node);
+	}
+
+	{
+		function node() {
 
 			this.addProperty("name", "graph:");
 			this.addProperty("inputs", "");
